@@ -1,0 +1,50 @@
+{
+  "name": "slopcheck",
+  "version": "0.1.0",
+  "description": "Scan markdown and config files for hallucinated npm package names. Defends against slopsquatting supply chain attacks.",
+  "keywords": [
+    "slopsquatting",
+    "supply-chain",
+    "security",
+    "npm",
+    "hallucination",
+    "ai",
+    "cli",
+    "github-action",
+    "sca",
+    "lint"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "slopcheck": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "action.yml"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:integration": "vitest run test/integration.test.ts",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

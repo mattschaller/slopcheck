@@ -1,0 +1,18 @@
+name: 'slopcheck'
+description: 'Scan markdown and config files for hallucinated npm package names (slopsquatting defense)'
+inputs:
+  paths:
+    description: 'Files or directories to scan (space-separated)'
+    required: false
+    default: '.'
+  ignore:
+    description: 'Comma-separated list of packages to skip'
+    required: false
+    default: ''
+  concurrency:
+    description: 'Max concurrent registry checks'
+    required: false
+    default: '10'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
