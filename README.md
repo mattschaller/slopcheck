@@ -33,7 +33,7 @@ slopcheck ./docs ./AGENTS.md
 ## GitHub Action
 
 ```yaml
-- uses: mattschaller/slopcheck@v0.1.0
+- uses: mattschaller/slopcheck@v0.1.1
   with:
     paths: '. docs/'
 ```
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: mattschaller/slopcheck@v0.1.0
+      - uses: mattschaller/slopcheck@v0.1.1
         with:
           paths: '.'
           ignore: 'my-internal-pkg,another-known-pkg'

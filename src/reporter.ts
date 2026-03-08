@@ -1,6 +1,6 @@
 import type { ScanResult, ValidationResult, Finding, SlopcheckResult } from './types.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 
 export function buildResult(
   scanResults: ScanResult[],

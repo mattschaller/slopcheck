@@ -9,7 +9,7 @@ export { validatePackages } from './validator.js';
 export { buildResult, formatText, formatJson, formatGitHubActions } from './reporter.js';
 export type { ScanResult, ValidationResult, Finding, SlopcheckResult, CLIOptions } from './types.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 
 function printHelp(): void {
   console.log(`slopcheck v${VERSION} — Catch hallucinated npm packages before they catch you.
