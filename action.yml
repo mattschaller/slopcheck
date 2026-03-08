@@ -13,6 +13,9 @@ inputs:
     description: 'Max concurrent registry checks'
     required: false
     default: '10'
+branding:
+  icon: 'shield'
+  color: 'red'
 runs:
   using: 'node20'
   main: 'dist/index.js'
