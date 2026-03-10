@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/youruser/slopcheck.git
+git clone https://github.com/mattschaller/slopcheck.git
 cd slopcheck
 npm install
 ```
