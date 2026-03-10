@@ -15,6 +15,11 @@
     "lint"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattschaller/slopcheck"
+  },
+  "author": "Matthew Schaller <matt@mattschaller.com>",
   "type": "module",
   "bin": {
     "slopcheck": "./dist/index.js"
