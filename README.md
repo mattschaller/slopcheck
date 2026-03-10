@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: mattschaller/slopcheck@v0.1.1
+      - uses: mattschaller/slopcheck@v0.1.2
         with:
           paths: '.'
 ```
@@ -102,7 +102,7 @@ Arguments:
 ### GitHub Action options
 
 ```yaml
-- uses: mattschaller/slopcheck@v0.1.1
+- uses: mattschaller/slopcheck@v0.1.2
   with:
     paths: '. docs/'
     ignore: 'my-internal-pkg,another-known-pkg'
