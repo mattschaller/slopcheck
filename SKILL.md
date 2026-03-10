@@ -3,8 +3,9 @@ name: slopcheck
 description: Validate npm package references in markdown, YAML, and config files against the live npm registry before installing or using them. Catches hallucinated and slopsquatted package names. Use for "check packages", "validate dependencies", "slopsquatting", "hallucinated packages", "phantom packages", "verify npm install".
 metadata:
   author: mattschaller
-  version: "0.1.1"
+  version: "0.1.2"
   docs: https://github.com/mattschaller/slopcheck
+  license: MIT
 ---
 
 # slopcheck
