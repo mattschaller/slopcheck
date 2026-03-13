@@ -1,6 +1,6 @@
 {
   "name": "slopcheck",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Scan markdown and config files for hallucinated npm package names. Defends against slopsquatting supply chain attacks.",
   "keywords": [
     "slopsquatting",
