@@ -1,6 +1,7 @@
 import type { ValidationResult } from './types.js';
 
 const REGISTRY_BASE = 'https://registry.npmjs.org';
+const DOWNLOADS_BASE = 'https://api.npmjs.org/downloads/point/last-month';
 const REQUEST_TIMEOUT = 10_000;
 const MAX_RETRIES = 3;
 
@@ -14,6 +15,26 @@ function packageUrl(name: string): string {
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function checkIfUnpublished(name: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+    const response = await fetch(`${DOWNLOADS_BASE}/${encodeURIComponent(name)}`, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) return false;
+
+    const data = (await response.json()) as { downloads?: number };
+    return typeof data.downloads === 'number' && data.downloads > 0;
+  } catch {
+    return false;
+  }
 }
 
 async function checkPackage(name: string): Promise<ValidationResult> {
@@ -36,7 +57,8 @@ async function checkPackage(name: string): Promise<ValidationResult> {
       }
 
       if (response.status === 404) {
-        return { name, exists: false, httpStatus: 404 };
+        const unpublished = await checkIfUnpublished(name);
+        return { name, exists: false, httpStatus: 404, isUnpublished: unpublished || undefined };
       }
 
       if (response.status === 451) {

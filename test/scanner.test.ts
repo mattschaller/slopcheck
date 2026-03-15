@@ -64,6 +64,14 @@ describe('scanFile', () => {
     expect(results[1].packages).toEqual(['bar']);
   });
 
+  it('scans .mdc files as markdown', () => {
+    const file = path.join(tmpDir, 'rules.mdc');
+    fs.writeFileSync(file, '---\ntitle: setup\n---\n\nnpm install some-tool\n');
+    const results = scanFile(file);
+    expect(results).toHaveLength(1);
+    expect(results[0].packages).toEqual(['some-tool']);
+  });
+
   it('scans .cursorrules files', () => {
     const file = path.join(tmpDir, '.cursorrules');
     fs.writeFileSync(file, 'Use npm install my-pkg for setup.\n');
@@ -81,6 +89,14 @@ describe('findFiles', () => {
     fs.writeFileSync(path.join(subDir, 'setup.md'), '');
     const files = findFiles(tmpDir);
     expect(files).toHaveLength(2);
+  });
+
+  it('discovers .mdc files', () => {
+    fs.writeFileSync(path.join(tmpDir, 'rules.mdc'), '');
+    fs.writeFileSync(path.join(tmpDir, 'readme.md'), '');
+    const files = findFiles(tmpDir);
+    expect(files).toHaveLength(2);
+    expect(files.some(f => f.endsWith('.mdc'))).toBe(true);
   });
 
   it('skips node_modules, .git, dist directories', () => {

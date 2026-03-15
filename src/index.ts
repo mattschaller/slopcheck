@@ -9,7 +9,7 @@ export { validatePackages } from './validator.js';
 export { buildResult, formatText, formatJson, formatGitHubActions } from './reporter.js';
 export type { ScanResult, ValidationResult, Finding, SlopcheckResult, CLIOptions } from './types.js';
 
-const VERSION = '0.1.1';
+const VERSION = '0.2.0';
 
 function printHelp(): void {
   console.log(`slopcheck v${VERSION} — Catch hallucinated npm packages before they catch you.
@@ -26,7 +26,7 @@ Options:
 
 Arguments:
   files/directories    files or directories to scan (default: current directory)
-                       directories are scanned recursively for .md, .yml, .yaml, .json, .cursorrules files
+                       directories are scanned recursively for .md, .mdc, .yml, .yaml, .json, .cursorrules files
                        node_modules, .git, dist, build directories are always excluded`);
 }
 
@@ -190,7 +190,7 @@ async function main(): Promise<void> {
   }
 
   // Exit code
-  if (result.packages.notFound > 0) {
+  if (result.packages.notFound > 0 || result.packages.unpublished > 0) {
     process.exit(1);
   }
 

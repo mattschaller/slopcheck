@@ -20,10 +20,44 @@ describe('validatePackages', () => {
   });
 
   it('returns exists: false for 404 response', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({ status: 404 });
+    globalThis.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('api.npmjs.org/downloads')) {
+        return { ok: true, json: async () => ({ downloads: 0 }) };
+      }
+      return { status: 404 };
+    });
     const results = await validatePackages(['fake-package']);
     expect(results).toHaveLength(1);
     expect(results[0]).toEqual({ name: 'fake-package', exists: false, httpStatus: 404 });
+  });
+
+  it('detects unpublished package (404 + downloads > 0)', async () => {
+    globalThis.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('api.npmjs.org/downloads')) {
+        return { ok: true, json: async () => ({ downloads: 1500 }) };
+      }
+      return { status: 404 };
+    });
+    const results = await validatePackages(['removed-pkg']);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toEqual({
+      name: 'removed-pkg',
+      exists: false,
+      httpStatus: 404,
+      isUnpublished: true,
+    });
+  });
+
+  it('falls back to not_found when downloads API fails', async () => {
+    globalThis.fetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('api.npmjs.org/downloads')) {
+        throw new Error('Network error');
+      }
+      return { status: 404 };
+    });
+    const results = await validatePackages(['broken-check']);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toEqual({ name: 'broken-check', exists: false, httpStatus: 404 });
   });
 
   it('flags security hold for 451 response', async () => {

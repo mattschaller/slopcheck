@@ -7,13 +7,13 @@ const INSTALL_PATTERN = /(?:npm\s+(?:install|i|add)|npx|pnpm\s+(?:add|install|i|
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
 
-const SCANNABLE_EXTENSIONS = new Set(['.md', '.yaml', '.yml', '.json', '.cursorrules']);
+const SCANNABLE_EXTENSIONS = new Set(['.md', '.mdc', '.yaml', '.yml', '.json', '.cursorrules']);
 
 function getFileType(filePath: string): 'markdown' | 'yaml' | 'json' | 'text' {
   const ext = path.extname(filePath).toLowerCase();
   const base = path.basename(filePath).toLowerCase();
 
-  if (ext === '.md' || base === '.cursorrules') return 'markdown';
+  if (ext === '.md' || ext === '.mdc' || base === '.cursorrules') return 'markdown';
   if (ext === '.yaml' || ext === '.yml') return 'yaml';
   if (ext === '.json') return 'json';
   return 'text';

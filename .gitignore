@@ -8,3 +8,5 @@ dist/
 *.pem
 *.key
 coverage/
+demo/*.tape
+demo/AGENTS.md

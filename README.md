@@ -1,7 +1,13 @@
 # slopcheck
 
 [![npm version](https://img.shields.io/npm/v/slopcheck)](https://www.npmjs.com/package/slopcheck)
+[![CI](https://github.com/mattschaller/slopcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/mattschaller/slopcheck/actions/workflows/ci.yml)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/slopcheck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+<p align="center">
+  <img src="demo/demo.gif" alt="slopcheck catching phantom packages in an AI-generated AGENTS.md" width="800">
+</p>
 
 > An LLM wrote `npx react-codeshift` across 47 files. The package didn't exist.
 > Then [someone registered it](https://www.aikido.dev/blog/agent-skills-spreading-hallucinated-npx-commands). 237 repos had already referenced it.
@@ -24,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: mattschaller/slopcheck@v0.1.2
+      - uses: mattschaller/slopcheck@v0.2.0
         with:
           paths: '.'
 ```
@@ -35,7 +41,7 @@ Findings appear as workflow annotations directly on the PR diff.
 
 AI coding agents hallucinate package names. According to [USENIX Security 2025 research](https://arxiv.org/abs/2406.10279), ~20% of AI-generated code references packages that don't exist on npm. 58% of these hallucinated names recur consistently across prompts, making them predictable squat targets. Attackers register these phantom names as malware and wait for installs.
 
-Your `AGENTS.md`, `SKILL.md`, `.cursorrules`, and documentation files are attack surfaces.
+Your `AGENTS.md`, `SKILL.md`, `.cursorrules`, `.mdc`, and documentation files are attack surfaces.
 
 ### Why this matters for AI agent skills
 
@@ -45,7 +51,7 @@ slopcheck catches those references before your agents install them.
 
 ## How it works
 
-Scans markdown, YAML, and JSON files for install commands (`npm install`, `npx`, `pnpm add`, `yarn add`, `bun add`, `bunx`) → extracts package names → validates each against the live npm registry → reports phantom packages.
+Scans markdown (`.md`, `.mdc`), YAML, and JSON files for install commands (`npm install`, `npx`, `pnpm add`, `yarn add`, `bun add`, `bunx`) → extracts package names → validates each against the live npm registry → reports phantom packages.
 
 Zero runtime dependencies. Uses only Node.js built-in APIs.
 
@@ -60,12 +66,16 @@ Snyk and Socket evaluate packages that exist on npm. slopcheck catches reference
 | Hallucinated package in AGENTS.md | AI generates `npx react-codeshift`, attacker registers the name | Detects `react-codeshift` doesn't exist on npm |
 | Hallucinated dependency in README | Developer copies `npm install phantom-pkg` from docs | Flags `phantom-pkg` as not found |
 | AI-generated SKILL.md with phantom packages | Spread across 237+ repos via copy/paste | Catches all non-existent package references |
+| Unpublished packages | Package was removed from npm but had downloads (takeover risk) | Detects via npm downloads API, flags as unpublished |
 | Security-held packages | Package removed by npm for malware (HTTP 451) | Flags with security hold warning |
 
 ### Example output
 
 ```
-slopcheck v0.1.1 — scanning 3 files for phantom packages
+slopcheck v0.2.0 — scanning 3 files for phantom packages
+
+✗ left-pad — unpublished from npm (takeover risk)
+  └─ AGENTS.md:22  npm install left-pad
 
 ✗ react-codeshift — not found on npm
   └─ AGENTS.md:14  npx react-codeshift --transform ...
@@ -74,9 +84,9 @@ slopcheck v0.1.1 — scanning 3 files for phantom packages
 ⚠ suspicious-pkg — security hold (HTTP 451)
   └─ .cursorrules:19  npm install suspicious-pkg
 
-✓ 12 packages verified, 1 not found, 1 security hold
+✓ 12 packages verified, 1 unpublished, 1 not found, 1 security hold
 
-Found 1 phantom package. Exit code 1.
+Found 2 phantom packages. Exit code 1.
 ```
 
 ## CLI options
@@ -94,7 +104,7 @@ Options:
 
 Arguments:
   files/directories    files or directories to scan (default: current directory)
-                       directories are scanned recursively for .md, .yml, .yaml,
+                       directories are scanned recursively for .md, .mdc, .yml, .yaml,
                        .json, .cursorrules files
                        node_modules, .git, dist, build directories are always excluded
 ```
@@ -102,7 +112,7 @@ Arguments:
 ### GitHub Action options
 
 ```yaml
-- uses: mattschaller/slopcheck@v0.1.2
+- uses: mattschaller/slopcheck@v0.2.0
   with:
     paths: '. docs/'
     ignore: 'my-internal-pkg,another-known-pkg'
@@ -125,6 +135,10 @@ Honesty builds trust:
 - [Antiy CERT — ClawHavoc Campaign](https://www.antiy.net/p/clawhavoc-analysis-of-large-scale-poisoning-campaign-targeting-the-openclaw-skill-market-for-ai-agents/) — 1,184 malicious skills on ClawHub
 - [HackerOne — Slopsquatting: AI and Supply Chain Security](https://www.hackerone.com/blog/ai-slopsquatting-supply-chain-security) — industry impact
 - [Trend Micro — Slopsquatting: When AI Agents Hallucinate Malicious Packages](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/slopsquatting-when-ai-agents-hallucinate-malicious-packages) — supply chain attack patterns
+
+## Roadmap
+
+- **v0.3.0** — SARIF output for GitHub Code Scanning integration
 
 ## Contributing
 

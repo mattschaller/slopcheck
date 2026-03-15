@@ -11,11 +11,12 @@ export interface ValidationResult {
   error?: string;
   httpStatus?: number;
   isSecurityHold?: boolean;
+  isUnpublished?: boolean;
 }
 
 export interface Finding {
   package: string;
-  status: 'not_found' | 'security_hold' | 'error';
+  status: 'not_found' | 'unpublished' | 'security_hold' | 'error';
   locations: Array<{ file: string; line: number; command: string }>;
 }
 
@@ -26,6 +27,7 @@ export interface SlopcheckResult {
     total: number;
     valid: number;
     notFound: number;
+    unpublished: number;
     securityHold: number;
     errors: number;
   };

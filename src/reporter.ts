@@ -1,6 +1,6 @@
 import type { ScanResult, ValidationResult, Finding, SlopcheckResult } from './types.js';
 
-const VERSION = '0.1.1';
+const VERSION = '0.2.0';
 
 export function buildResult(
   scanResults: ScanResult[],
@@ -23,7 +23,9 @@ export function buildResult(
 
       let status: Finding['status'] | null = null;
 
-      if (!validation.exists && !validation.error) {
+      if (!validation.exists && !validation.error && validation.isUnpublished) {
+        status = 'unpublished';
+      } else if (!validation.exists && !validation.error) {
         status = 'not_found';
       } else if (validation.isSecurityHold && !options.noSecurityHold) {
         status = 'security_hold';
@@ -59,6 +61,7 @@ export function buildResult(
   }
 
   const notFoundCount = findings.filter(f => f.status === 'not_found').length;
+  const unpublishedCount = findings.filter(f => f.status === 'unpublished').length;
   const securityHoldCount = findings.filter(f => f.status === 'security_hold').length;
   const errorCount = findings.filter(f => f.status === 'error').length;
 
@@ -67,8 +70,9 @@ export function buildResult(
     scanned: scannedFileCount,
     packages: {
       total: allPackages.size,
-      valid: allPackages.size - notFoundCount - securityHoldCount - errorCount,
+      valid: allPackages.size - notFoundCount - unpublishedCount - securityHoldCount - errorCount,
       notFound: notFoundCount,
+      unpublished: unpublishedCount,
       securityHold: securityHoldCount,
       errors: errorCount,
     },
@@ -81,6 +85,15 @@ export function formatText(result: SlopcheckResult): string {
 
   lines.push(`slopcheck v${result.version} — scanning ${result.scanned} file${result.scanned !== 1 ? 's' : ''} for phantom packages`);
   lines.push('');
+
+  // Unpublished
+  for (const finding of result.findings.filter(f => f.status === 'unpublished')) {
+    lines.push(`✗ ${finding.package} — unpublished from npm (takeover risk)`);
+    for (const loc of finding.locations) {
+      lines.push(`  └─ ${loc.file}:${loc.line}  ${loc.command}`);
+    }
+    lines.push('');
+  }
 
   // Not found
   for (const finding of result.findings.filter(f => f.status === 'not_found')) {
@@ -112,14 +125,16 @@ export function formatText(result: SlopcheckResult): string {
   // Summary
   const parts: string[] = [];
   parts.push(`${result.packages.valid} packages verified`);
+  if (result.packages.unpublished > 0) parts.push(`${result.packages.unpublished} unpublished`);
   if (result.packages.notFound > 0) parts.push(`${result.packages.notFound} not found`);
   if (result.packages.securityHold > 0) parts.push(`${result.packages.securityHold} security hold`);
   if (result.packages.errors > 0) parts.push(`${result.packages.errors} errors`);
   lines.push(`✓ ${parts.join(', ')}`);
 
-  if (result.packages.notFound > 0) {
+  const phantomCount = result.packages.notFound + result.packages.unpublished;
+  if (phantomCount > 0) {
     lines.push('');
-    lines.push(`Found ${result.packages.notFound} phantom package${result.packages.notFound !== 1 ? 's' : ''}. Exit code 1.`);
+    lines.push(`Found ${phantomCount} phantom package${phantomCount !== 1 ? 's' : ''}. Exit code 1.`);
   }
 
   return lines.join('\n');
@@ -134,12 +149,14 @@ export function formatGitHubActions(result: SlopcheckResult): string {
 
   for (const finding of result.findings) {
     for (const loc of finding.locations) {
-      const level = finding.status === 'not_found' ? 'error' : 'warning';
-      const msg = finding.status === 'not_found'
-        ? `Package "${finding.package}" not found on npm (possible slopsquatting target)`
-        : finding.status === 'security_hold'
-          ? `Package "${finding.package}" is under security hold (HTTP 451)`
-          : `Package "${finding.package}" validation error`;
+      const level = finding.status === 'not_found' || finding.status === 'unpublished' ? 'error' : 'warning';
+      const msg = finding.status === 'unpublished'
+        ? `Package "${finding.package}" was unpublished from npm (takeover risk)`
+        : finding.status === 'not_found'
+          ? `Package "${finding.package}" not found on npm (possible slopsquatting target)`
+          : finding.status === 'security_hold'
+            ? `Package "${finding.package}" is under security hold (HTTP 451)`
+            : `Package "${finding.package}" validation error`;
       lines.push(`::${level} file=${loc.file},line=${loc.line}::${msg}`);
     }
   }
