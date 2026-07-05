@@ -44,7 +44,7 @@
     "prepublishOnly": "npm run build && npm run test"
   },
   "devDependencies": {
-    "@types/node": "^25.3.5",
+    "@types/node": "^26.1.0",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
     "vitest": "^4.0.18"
